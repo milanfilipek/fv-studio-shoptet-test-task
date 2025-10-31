@@ -6,9 +6,7 @@ namespace app\controllers;
 
 use app\components\ShoptetApiHelper;
 use app\models\Product;
-use app\models\ProductCategory;
 use Yii;
-use yii\db\mysql\QueryBuilder;
 use yii\web\Controller;
 use yii\web\Response;
 
