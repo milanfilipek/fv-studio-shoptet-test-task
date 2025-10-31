@@ -1,7 +1,7 @@
 FROM php:8.2-apache
 
 RUN apt-get update && apt-get install -y \
-    git unzip libzip-dev && \
+    git unzip libzip-dev cron && \
     docker-php-ext-install pdo pdo_mysql zip
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -17,6 +17,18 @@ RUN a2enmod rewrite \
 
 RUN chown -R www-data:www-data /var/www/html
 
-RUN composer install
+RUN composer install --no-interaction
+
+# set up cron to run yii command every 15 minutes
+RUN mkdir -p /etc/cron.d \
+ && mkdir -p /var/www/html/runtime/logs \
+ && echo "*/15 * * * * cd /var/www/html && /usr/local/bin/php yii sync-shoptet-products/cron >> /var/www/html/runtime/logs/cron.log 2>&1" > /etc/cron.d/shoptet-cron \
+ && chmod 0644 /etc/cron.d/shoptet-cron \
+ && crontab /etc/cron.d/shoptet-cron \
+ && touch /var/www/html/runtime/logs/cron.log
+
+RUN mkdir -p /var/www/html/runtime/logs && touch /var/www/html/runtime/logs/cron.log
 
 EXPOSE 80
+
+CMD service cron start && apache2-foreground

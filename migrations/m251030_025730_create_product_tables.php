@@ -18,6 +18,7 @@ class m251030_025730_create_product_tables extends Migration
             'image_url' => $this->string(),
             'stock_quantity' => $this->integer(),
             'description' => $this->text(),
+            'price' => $this->double(2),
         ]);
 
         $this->createTable('{{%categories}}', [
@@ -37,8 +38,8 @@ class m251030_025730_create_product_tables extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%product_category}}');
-        $this->dropTable('{{%category}}');
-        $this->dropTable('{{%product}}');
+        $this->dropTable('{{%products_categories}}');
+        $this->dropTable('{{%categories}}');
+        $this->dropTable('{{%products}}');
     }
 }
