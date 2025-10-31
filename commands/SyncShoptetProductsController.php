@@ -14,8 +14,11 @@ class SyncShoptetProductsController extends Controller
 {
     private const LOCK_FILE = '@runtime/sync_shoptet_products_to_db.lock';
 
-    public function actionRun()
+    public function actionRun(): void
     {
+        ini_set('memory_limit', '-1');
+        ini_set('max_execution_time', '0');
+
         $lockFilePath = \Yii::getAlias(self::LOCK_FILE);
 
         if (file_exists($lockFilePath)) {
@@ -23,10 +26,10 @@ class SyncShoptetProductsController extends Controller
             if ($lockAge < 5400) {
                 echo "[" . date('Y-m-d H:i:s') . "] Sync already running or locked.\n";
                 return;
-            } else {
-                echo "[" . date('Y-m-d H:i:s') . "] Lock file is old, removing stale lock.\n";
-                unlink($lockFilePath);
             }
+
+            echo "[" . date('Y-m-d H:i:s') . "] Lock file is old, removing stale lock.\n";
+            unlink($lockFilePath);
         }
 
         file_put_contents($lockFilePath, getmypid());
@@ -44,7 +47,7 @@ class SyncShoptetProductsController extends Controller
 
                 foreach ($products as $p) {
                     $product = Product::findOne(['shoptet_id' => $p['guid']]) ?? new Product();
-                    usleep(750000); // rate limiter - 750 * 10^-6s = 0,75s
+                    usleep(850000); // rate limiter - 850 * 10^-6s = 0,85s
                     $product_detail = $api->getProductDetail($p['guid']);
 
                     $product->shoptet_id = $product_detail['guid'];
@@ -86,7 +89,7 @@ class SyncShoptetProductsController extends Controller
         echo "Sync complete.\n";
     }
 
-    public function actionCron()
+    public function actionCron(): void
     {
         echo "[" . date('Y-m-d H:i:s') . "] Starting cron sync...\n";
         $this->actionRun();
